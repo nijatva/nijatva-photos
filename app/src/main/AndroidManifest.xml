@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Android 13+ granular media permissions -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <!-- Legacy permission for Android 8-12 -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <!-- Needed only once Zoho cloud sync is switched on in a future version -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Viewer actions: wallpaper, contact avatar, PDF export on Android 8-9 -->
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <queries>
+        <package android:name="com.vasudev.photoeditor" />
+    </queries>
+
+    <application
+        android:name=".ZohoPhotosApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="Photos"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ZohoPhotos">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- MyLensKit: visual search (web visual matches screen) -->
+        <activity
+            android:name="com.mylens.kit.BingVisionActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.vasudev.photos.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- MyLensKit: camera output + visual-search file chooser -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.mylens.kit.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/mylens_file_paths" />
+        </provider>
+    </application>
+
+</manifest>
