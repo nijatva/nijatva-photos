@@ -5,6 +5,23 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+// ---- Signing (never committed) ----
+// The keystore and its passwords are deliberately kept out of version control.
+// To produce builds that keep a stable signature, place `myphotos.keystore` in the
+// project root and a gitignored `keystore.properties` next to it:
+//     storePassword=...
+//     keyAlias=myphotos
+//     keyPassword=...
+// Without them the build falls back to the standard Android debug key.
+val keystoreProps = java.util.Properties().apply {
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+val keystoreFile = rootProject.file("myphotos.keystore")
+val hasSigning = keystoreFile.exists() &&
+    keystoreProps.getProperty("storePassword") != null &&
+    keystoreProps.getProperty("keyPassword") != null
+
 android {
     namespace = "com.vasudev.photos"
     compileSdk = 34
@@ -18,23 +35,30 @@ android {
     }
 
     signingConfigs {
-        create("fixed") {
-            // Persistent keystore kept in the project root so EVERY build
-            // (any machine, any sandbox reset) installs as an update.
-            storeFile = file("../myphotos.keystore")
-            storePassword = "myphotos2024"
-            keyAlias = "myphotos"
-            keyPassword = "myphotos2024"
+        // Only created when a keystore + credentials are supplied locally.
+        if (hasSigning) {
+            create("fixed") {
+                storeFile = keystoreFile
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias") ?: "myphotos"
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
         }
     }
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("fixed")
+            signingConfig = if (hasSigning) {
+                signingConfigs.getByName("fixed")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("fixed")
+            if (hasSigning) {
+                signingConfig = signingConfigs.getByName("fixed")
+            }
         }
     }
     compileOptions {

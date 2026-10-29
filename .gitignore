@@ -9,3 +9,7 @@
 .cxx
 *.apk
 app/build/
+# signing material — never commit
+*.keystore
+*.jks
+keystore.properties
