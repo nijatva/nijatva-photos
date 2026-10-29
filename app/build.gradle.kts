@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -7,17 +9,19 @@ plugins {
 
 // ---- Signing (never committed) ----
 // The keystore and its passwords are deliberately kept out of version control.
-// To produce builds that keep a stable signature, place `myphotos.keystore` in the
+// To produce builds that keep a stable signature, place your keystore in the
 // project root and a gitignored `keystore.properties` next to it:
+//     storeFile=nijatva.keystore
 //     storePassword=...
-//     keyAlias=myphotos
+//     keyAlias=nijatva
 //     keyPassword=...
 // Without them the build falls back to the standard Android debug key.
-val keystoreProps = java.util.Properties().apply {
+val keystoreProps = Properties().apply {
     val f = rootProject.file("keystore.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
-val keystoreFile = rootProject.file("myphotos.keystore")
+val keystoreName = keystoreProps.getProperty("storeFile") ?: "nijatva.keystore"
+val keystoreFile = rootProject.file(keystoreName)
 val hasSigning = keystoreFile.exists() &&
     keystoreProps.getProperty("storePassword") != null &&
     keystoreProps.getProperty("keyPassword") != null
@@ -40,7 +44,7 @@ android {
             create("fixed") {
                 storeFile = keystoreFile
                 storePassword = keystoreProps.getProperty("storePassword")
-                keyAlias = keystoreProps.getProperty("keyAlias") ?: "myphotos"
+                keyAlias = keystoreProps.getProperty("keyAlias") ?: "nijatva"
                 keyPassword = keystoreProps.getProperty("keyPassword")
             }
         }
