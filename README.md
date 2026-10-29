@@ -15,7 +15,7 @@ A local-first Android gallery — your photos stay on your device unless you exp
 - **On-device AI (ML Kit)** — image labelling, face detection, text recognition (OCR). Nothing leaves the phone.
 - **Lens** — visual search and OCR via the bundled MyLensKit, with a floating one-tap Lens button in the viewer.
 - **Viewer** — Material 3 viewer with a categorized action sheet (Cloud / Organize / Security / Conversion), video playback, details panel.
-- **Photo editor** — the [Photalius](https://github.com/hossein-pira/photalius) web editor (fabric.js) merged in-app and hosted in a WebView, so editing needs no separate install. Photos open straight into the canvas and exports are saved to `Pictures/Nijatva Photos`.
+- **Photo editor** — the Photalius web editor (fabric.js) merged in-app and hosted in a WebView, so editing needs no separate install. Photos open straight into the canvas and exports are saved to `Pictures/Nijatva Photos`.
 - **Private vault** — PIN/biometric-protected private album hidden from the main view.
 - **Trash** — 30-day recycle bin with a per-item countdown badge.
 - **Sharing** — optional EXIF/metadata stripping before share; PDF conversion.
@@ -39,8 +39,18 @@ echo "sdk.dir=/path/to/Android/Sdk" > local.properties
 
 Install with `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
 
+## Signing
+
+Signing material is **not** in this repository. To produce builds that keep a stable signature (so updates install over an existing install), place `myphotos.keystore` in the project root and a gitignored `keystore.properties` next to it:
+
+```properties
+storePassword=...
+keyAlias=myphotos
+keyPassword=...
+```
+
+Without both files the build falls back to the standard Android debug key.
+
 ## Notes
 
-- `myphotos.keystore` is committed so debug/release builds keep a stable signature across machines (this is a private repo). Replace it with your own keystore before publishing anywhere.
 - The editor assets under `app/src/main/assets/photalius/` come from the Photalius project (MIT, by Hossein Pira) and are bundled so the editor works fully offline.
-- PhotoCraft/Photalius reference: the app previously hand-offed editing to a separate editor app; that path is replaced by the in-app editor.
