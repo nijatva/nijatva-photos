@@ -15,6 +15,9 @@ object Prefs {
     private const val KEY_HIDDEN_SECTIONS = "albums_hidden_sections"
     private const val KEY_LENS_API_URL = "lens_api_url"
     private const val KEY_LENS_API_KEY = "lens_api_key"
+    private const val KEY_THEME_MODE = "theme_mode"
+    private const val KEY_ACCENT = "accent_colour"
+    private const val KEY_DYNAMIC = "dynamic_colour"
 
     val SECTION_IDS = listOf("moreAlbums", "featured", "mediaTypes", "more")
 
@@ -118,5 +121,36 @@ object Prefs {
     fun setHiddenSections(context: Context, hidden: Set<String>) {
         context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
             .edit().putString(KEY_HIDDEN_SECTIONS, hidden.joinToString(",")).apply()
+    }
+
+    /* ---- Appearance ---- */
+
+    /** "system" | "light" | "dark" | "black" */
+    fun themeMode(context: Context): String =
+        context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+            .getString(KEY_THEME_MODE, "system") ?: "system"
+
+    fun setThemeMode(context: Context, value: String) {
+        context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+            .edit().putString(KEY_THEME_MODE, value).apply()
+    }
+
+    /** "green" | "saffron" | "indigo" */
+    fun accent(context: Context): String =
+        context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+            .getString(KEY_ACCENT, "green") ?: "green"
+
+    fun setAccent(context: Context, value: String) {
+        context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+            .edit().putString(KEY_ACCENT, value).apply()
+    }
+
+    fun dynamicColor(context: Context): Boolean =
+        context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+            .getBoolean(KEY_DYNAMIC, false)
+
+    fun setDynamicColor(context: Context, value: Boolean) {
+        context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+            .edit().putBoolean(KEY_DYNAMIC, value).apply()
     }
 }

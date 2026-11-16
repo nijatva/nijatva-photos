@@ -45,7 +45,9 @@ import androidx.navigation.compose.rememberNavController
 import com.nijatva.photos.findApp
 import com.nijatva.photos.ui.screens.AlbumDetailScreen
 import com.nijatva.photos.ui.screens.AlbumsScreen
+import com.nijatva.photos.ui.screens.AppearanceScreen
 import com.nijatva.photos.ui.screens.CleanupScreen
+import com.nijatva.photos.ui.screens.DeveloperScreen
 import com.nijatva.photos.ui.screens.EditorScreen
 import com.nijatva.photos.ui.screens.LensScreen
 import com.nijatva.photos.ui.screens.PhotoPagerScreen
@@ -168,8 +170,16 @@ fun ZohoPhotosRoot() {
             composable("settings") {
                 SettingsScreen(
                     onOpenVault = { navController.navigate("vault") },
-                    onOpenCleanup = { navController.navigate("cleanup") }
+                    onOpenCleanup = { navController.navigate("cleanup") },
+                    onOpenAppearance = { navController.navigate("appearance") },
+                    onOpenDeveloper = { navController.navigate("developer") }
                 )
+            }
+            composable("appearance") {
+                AppearanceScreen(onBack = { navController.popBackStack() })
+            }
+            composable("developer") {
+                DeveloperScreen(onBack = { navController.popBackStack() })
             }
             composable("vault") {
                 VaultScreen(onBack = { navController.popBackStack() })

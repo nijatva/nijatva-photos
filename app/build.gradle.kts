@@ -27,11 +27,11 @@ val hasSigning = keystoreFile.exists() &&
     keystoreProps.getProperty("keyPassword") != null
 
 android {
-    namespace = "com.vasudev.photos"
+    namespace = "com.nijatva.photos"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.vasudev.photos"
+        applicationId = "com.nijatva.photos"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

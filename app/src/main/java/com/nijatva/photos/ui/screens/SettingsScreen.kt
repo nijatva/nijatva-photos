@@ -50,7 +50,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsScreen(
     onOpenVault: () -> Unit = {},
-    onOpenCleanup: () -> Unit = {}
+    onOpenCleanup: () -> Unit = {},
+    onOpenAppearance: () -> Unit = {},
+    onOpenDeveloper: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val engine = context.findApp().container.syncEngine
@@ -253,6 +255,17 @@ fun SettingsScreen(
             }
         }
 
+        /* ---- Appearance ---- */
+        SectionLabel("Appearance")
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                SettingNavRow(
+                    title = "Appearance",
+                    subtitle = "Theme, accent colour, dynamic colour"
+                ) { onOpenAppearance() }
+            }
+        }
+
         /* ---- About ---- */
         SectionLabel("About")
         Row(
@@ -283,7 +296,7 @@ fun SettingsScreen(
                 SettingNavRow(
                     title = "About Nijatva Photos",
                     subtitle = "Nijatva Photos 2.2.0 \u00B7 local-first gallery"
-                ) {}
+                ) { onOpenDeveloper() }
                 HorizontalDivider()
                 SettingNavRow(
                     title = "Privacy",
