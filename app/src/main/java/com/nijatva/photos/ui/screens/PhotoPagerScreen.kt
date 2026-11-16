@@ -361,14 +361,25 @@ fun PhotoPagerScreen(
         if (menuOpen) {
             ActionSheet(
                 sections = listOf(
-                    SheetSection("Nijatva apps", listOf(
-                        SheetAction("Open in Nijatva Gallery", R.drawable.ic_folder) {
+                    SheetSection("Nijatva apps", buildList {
+                        add(SheetAction("Open in Nijatva Gallery", R.drawable.ic_folder) {
                             NijatvaApps.openInGallery(context, current.uri, current.mimeType)
-                        },
-                        SheetAction("Open Nijatva Camera", R.drawable.ic_camera) {
-                            NijatvaApps.openCamera(context)
+                        })
+                        add(SheetAction("Edit in Nijatva Editor", R.drawable.ic_edit) {
+                            // A sibling editor if installed, otherwise our own in-app editor.
+                            if (!NijatvaApps.editInPhotoEditor(context, current.uri, current.mimeType)) {
+                                onOpenEditor(current.uri)
+                            }
+                        })
+                        if (current.mimeType?.startsWith("video/") == true) {
+                            add(SheetAction("Play in Nijatva Player", R.drawable.ic_play) {
+                                NijatvaApps.playVideo(context, current.uri, current.mimeType)
+                            })
                         }
-                    )),
+                        add(SheetAction("Open Nijatva Camera", R.drawable.ic_camera) {
+                            NijatvaApps.openCamera(context)
+                        })
+                    }),
                     SheetSection("Edit", listOf(
                         SheetAction("Edit in Photalius", R.drawable.ic_edit) {
                             onOpenEditor(current.uri)

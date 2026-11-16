@@ -20,9 +20,16 @@
 
     <queries>
         <package android:name="com.vasudev.photoeditor" />
-        <!-- the other Nijatva apps this one hands off to -->
+        <!-- The Nijatva family. Declaring them keeps the hand-offs working on
+             Android 11+, where an app cannot see (or launch) packages it has not
+             asked about. Missing ones simply fail over to the system chooser. -->
         <package android:name="com.nijatva.gallery" />
         <package android:name="com.nijatva.camera" />
+        <package android:name="com.nijatva.photo.editor" />
+        <package android:name="com.nijatva.videoplayer" />
+        <package android:name="com.nijatva.music.player" />
+        <package android:name="com.nijatva.file" />
+        <package android:name="in.nijatva.browser" />
     </queries>
 
     <application
