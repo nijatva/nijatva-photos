@@ -57,6 +57,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import android.content.ContentValues
+import android.provider.MediaStore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -92,6 +94,7 @@ import com.nijatva.photos.sync.SyncResult
 import com.nijatva.photos.ui.DeleteResult
 import com.nijatva.photos.ui.RenameResult
 import com.nijatva.photos.ui.components.formatDate
+import com.nijatva.photos.ui.NijatvaApps
 import com.nijatva.photos.ui.components.ActionSheet
 import com.nijatva.photos.ui.components.SheetAction
 import com.nijatva.photos.ui.components.SheetSection
@@ -133,6 +136,24 @@ fun PhotoPagerScreen(
     var showInfo by remember { mutableStateOf(false) }
     var albumPicker by remember { mutableStateOf<AlbumPickerMode?>(null) }
     var showRename by remember { mutableStateOf(false) }
+
+    // Camera: capture into our own cache through ACTION_IMAGE_CAPTURE, then copy the
+    // result into MediaStore so Nijatva Gallery (and every other gallery) sees it.
+    var captureUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val uri = captureUri
+        if (result.resultCode == android.app.Activity.RESULT_OK && uri != null) {
+            val ok = saveCaptureToGallery(context, uri)
+            Toast.makeText(
+                context,
+                if (ok) "Photo saved to your gallery" else "Could not save the photo",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        captureUri = null
+    }
     var menuOpen by remember { mutableStateOf(false) }
     var pendingRename by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -306,13 +327,21 @@ fun PhotoPagerScreen(
                 )
             }
             IconButton(onClick = {
-                // Opens the system camera app (demo-grade integration).
-                try {
-                    context.startActivity(
-                        android.content.Intent("android.media.action.STILL_IMAGE_CAMERA")
-                    )
-                } catch (e: Exception) {
-                    Toast.makeText(context, "No camera app found", Toast.LENGTH_SHORT).show()
+                val target = createCaptureUri(context)
+                if (target == null) {
+                    NijatvaApps.openCamera(context)
+                } else {
+                    captureUri = target
+                    val intent = android.content.Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                        putExtra(MediaStore.EXTRA_OUTPUT, target)
+                        addFlags(android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    }
+                    try {
+                        cameraLauncher.launch(intent)
+                    } catch (e: Exception) {
+                        captureUri = null
+                        NijatvaApps.openCamera(context)
+                    }
                 }
             }) {
                 Icon(
@@ -332,6 +361,14 @@ fun PhotoPagerScreen(
         if (menuOpen) {
             ActionSheet(
                 sections = listOf(
+                    SheetSection("Nijatva apps", listOf(
+                        SheetAction("Open in Nijatva Gallery", R.drawable.ic_folder) {
+                            NijatvaApps.openInGallery(context, current.uri, current.mimeType)
+                        },
+                        SheetAction("Open Nijatva Camera", R.drawable.ic_camera) {
+                            NijatvaApps.openCamera(context)
+                        }
+                    )),
                     SheetSection("Edit", listOf(
                         SheetAction("Edit in Photalius", R.drawable.ic_edit) {
                             onOpenEditor(current.uri)
@@ -896,4 +933,39 @@ private fun AlbumPickerSheet(
             ) { Text("Create album") }
         }
     }
+}
+
+
+/** FileProvider uri in our cache for ACTION_IMAGE_CAPTURE to write into. */
+private fun createCaptureUri(context: android.content.Context): android.net.Uri? = try {
+    val dir = java.io.File(context.cacheDir, "captures").apply { mkdirs() }
+    val file = java.io.File(dir, "IMG_${System.currentTimeMillis()}.jpg")
+    androidx.core.content.FileProvider.getUriForFile(
+        context, "com.nijatva.photos.fileprovider", file
+    )
+} catch (e: Exception) {
+    null
+}
+
+/** Copies a captured photo into MediaStore so it shows up in every gallery app. */
+private fun saveCaptureToGallery(context: android.content.Context, source: android.net.Uri): Boolean = try {
+    val values = ContentValues().apply {
+        put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_${System.currentTimeMillis()}.jpg")
+        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Nijatva Photos")
+        }
+    }
+    val resolver = context.contentResolver
+    val dest = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+    if (dest == null) {
+        false
+    } else {
+        resolver.openInputStream(source)?.use { input ->
+            resolver.openOutputStream(dest)?.use { out -> input.copyTo(out) }
+        }
+        true
+    }
+} catch (e: Exception) {
+    false
 }

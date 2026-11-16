@@ -20,6 +20,9 @@
 
     <queries>
         <package android:name="com.vasudev.photoeditor" />
+        <!-- the other Nijatva apps this one hands off to -->
+        <package android:name="com.nijatva.gallery" />
+        <package android:name="com.nijatva.camera" />
     </queries>
 
     <application
@@ -37,6 +40,23 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Be a gallery candidate, and accept a photo/video handed over by
+                 Nijatva Gallery or Nijatva Camera. -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.APP_GALLERY" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
             </intent-filter>
         </activity>
 

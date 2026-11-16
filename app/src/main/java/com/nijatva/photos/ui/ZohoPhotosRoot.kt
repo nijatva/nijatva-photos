@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,8 +61,13 @@ import com.nijatva.photos.ui.screens.VaultScreen
 import kotlinx.coroutines.launch
 
 @Composable
-fun ZohoPhotosRoot() {
+fun ZohoPhotosRoot(initialMediaId: Long? = null) {
     val navController = rememberNavController()
+
+    // A photo handed over by Nijatva Gallery / Camera opens straight in the viewer.
+    LaunchedEffect(initialMediaId) {
+        if (initialMediaId != null) navController.navigate("photo/$initialMediaId")
+    }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val showBottomBar = currentRoute == "photos" || currentRoute == "albums"

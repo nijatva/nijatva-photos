@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <cache-path name="shared" path="shared/" />
+    <!-- where ACTION_IMAGE_CAPTURE writes its output before we copy it into MediaStore -->
+    <cache-path name="captures" path="captures/" />
 </paths>
