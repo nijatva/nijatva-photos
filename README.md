@@ -1,73 +1,119 @@
-# Nijatva Photos
+# Zoho Photos
 
-A local-first Android gallery — your photos stay on your device unless you explicitly share or back them up.
+A **local-first, Google Photos-style gallery for Android**. Your photos and videos
+stay on your device — nothing is uploaded, and no account is needed.
 
-- **App name / launcher label:** Photos
-- **Product name:** Nijatva Photos
-- **Package:** `com.vasudev.photos`
-- **minSdk 26 · targetSdk / compileSdk 34**
+**Zoho account support is designed in but switched off.** A future version will
+connect a Zoho account for cloud backup; the sync engine, provider interface and
+persistent upload queue are already in place (see "Zoho integration roadmap" below).
 
-## Download
+## Features (v1.0.0)
 
-Latest APK: **[NijatvaPhotos-debug.apk](https://github.com/vasudev-work/nijatva-photos/releases/download/v1.0.0/NijatvaPhotos-debug.apk)**
+- **Photos tab** — full gallery of photos and videos in a date-grouped grid, newest first
+- **Memories** — "1 year ago / N years ago" cards for photos taken on today's date in past years
+- **Albums** — create your own albums, plus automatic "Folders on device" (Camera, Screenshots, Downloads, WhatsApp, etc.)
+- **Search** — search by file name with quick filters (All / Favorites / Videos)
+- **Favorites** — mark photos as favorites (stored in a local database)
+- **Full-screen viewer** — swipe through photos, favorite, share, view details, add to album
+- **Share** — standard Android share sheet (any app: WhatsApp, Gmail, etc.)
+- **Backup queue** — tap the cloud icon on a photo to queue it for backup; it uploads
+  automatically once a Zoho account is connected in a future version
+- **Local-first by design** — media is read in place from MediaStore; never copied or modified
 
-- ABI: `arm64-v8a` (all current phones)
-- Signed with the Nijatva key — uninstall any build signed with a different key first
-- sha256 `fdcd5f08d91a1dda4b6bd0b34fc1c5020b20068264acde64ae91627f55fc4ab2`
+## Tech stack
 
-## Features
+- Kotlin, Jetpack Compose (Material 3, dynamic color)
+- MediaStore API for photos/videos (scoped storage compliant)
+- Room database (albums, favorites, upload queue)
+- Coil for image loading
+- Navigation Compose, ViewModel + StateFlow (MVVM)
 
-- **Gallery** — Photos / Albums toggle, pinned sections (Camera, Videos, Screenshots, Favourites, Trash, Private), custom section order, sort toggle.
-- **Albums** — user albums, bucket albums, featured, media types, pinning.
-- **Search** — file names, places, times, media-type filters (GIF, screenshots, videos, documents).
-- **On-device AI (ML Kit)** — image labelling, face detection, text recognition (OCR). Nothing leaves the phone.
-- **Lens** — visual search and OCR via the bundled MyLensKit, with a floating one-tap Lens button in the viewer and Copy / Translate / Search actions on recognised text.
-- **Viewer** — Material 3 viewer with a categorized action sheet (Cloud / Organize / Security / Conversion), video playback, details panel.
-- **Photo editor** — the Photalius web editor (fabric.js) merged in-app and hosted in a WebView, so editing needs no separate install. Photos open straight into the canvas and exports are saved to `Pictures/Nijatva Photos`.
-- **Private vault** — PIN/biometric-protected private album hidden from the main view.
-- **Trash** — 30-day recycle bin with a per-item countdown badge.
-- **Sharing** — optional EXIF/metadata stripping before share; PDF conversion.
-- **Backup** — Google Photos hand-off (opens Google Photos so you can turn on its own Backup & sync); no account access by this app.
-- **Brand** — GBWB palette (Green, Blue, White, Black); Material You dynamic colour is intentionally disabled so the app looks the same on every device.
+## Requirements
 
-## Stack
+- **Android Studio** Ladybug (2024.1.1) or newer
+- JDK 17 (bundled with Android Studio)
+- An Android device or emulator running **Android 8.0 (API 26)** or newer
 
-Kotlin · Jetpack Compose · Material 3 · Navigation Compose · Room · Coil (+ coil-video) · ML Kit (image labelling, face detection, text recognition) · androidx.webkit `WebViewAssetLoader` for the embedded editor.
+## Build & run
 
-## Build
+1. Unzip this project.
+2. In Android Studio: **File → Open…** and select the `ZohoPhotos` folder.
+3. Let Gradle sync finish (first sync downloads dependencies — if Android Studio
+   prompts about a missing Gradle wrapper, accept its offer to fix/use a default Gradle 8.7).
+4. Connect your phone with USB debugging enabled (or start an emulator).
+5. Press **Run**.
 
-Requires JDK 17 and the Android SDK (platform 34).
+To build an APK from the command line instead:
 
-```sh
-# point Gradle at your SDK
-echo "sdk.dir=/path/to/Android/Sdk" > local.properties
-
+```bash
+gradle wrapper          # once, if you have Gradle installed
 ./gradlew assembleDebug
-# -> app/build/outputs/apk/debug/app-debug.apk
+# APK lands in app/build/outputs/apk/debug/
 ```
 
-The debug APK built this way contains native libraries for every ABI, which makes it large.
-For a phone-only build, strip the emulator ABIs before signing:
+> Note: this project was generated without a Gradle wrapper JAR, so building from
+> Android Studio (which provisions Gradle itself) is the easiest path.
 
-```sh
-zip -d app-debug.apk "lib/x86/*" "lib/x86_64/*" "lib/armeabi-v7a/*"
-zipalign -p -f 4 app-debug.apk aligned.apk
-apksigner sign --ks nijatva.keystore --ks-key-alias nijatva --out NijatvaPhotos.apk aligned.apk
+## Permissions
+
+- Android 13+: `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO` (granular media access)
+- Android 8–12: `READ_EXTERNAL_STORAGE`
+- `INTERNET` is declared for the future Zoho sync but is unused in v1.
+
+## Project structure
+
+```
+app/src/main/java/com/zoho/photos/
+├── ZohoPhotosApplication.kt      # App + container wiring
+├── MainActivity.kt
+├── data/
+│   ├── MediaItem.kt               # Photo/video model, Memory model
+│   ├── MediaStoreDataSource.kt    # Reads device photos & videos
+│   ├── PhotoRepository.kt         # Combines media + local metadata
+│   ├── AppContainer.kt            # Manual DI container
+│   └── db/AppDatabase.kt          # Room: albums, favorites, upload queue
+├── sync/                          # ← Zoho-ready sync layer
+│   ├── CloudSyncProvider.kt      # Provider interface (pluggable)
+│   ├── SyncEngine.kt             # Queue draining + status
+│   ├── NoOpSyncProvider.kt       # Active provider (local only)
+│   └── zoho/ZohoSyncProvider.kt  # Placeholder for the real Zoho integration
+└── ui/
+    ├── ZohoPhotosRoot.kt          # Navigation + bottom bar
+    ├── theme/Theme.kt
+    ├── components/PhotoGrid.kt    # Grid, day headers, memories cards
+    ├── vm/                        # ViewModels + factories
+    └── screens/                   # Photos, Albums, AlbumDetail,
+                                   # PhotoPager, Search, Settings
 ```
 
-## Signing
+## Zoho integration roadmap (future version)
 
-Signing material is **not** in this repository. To produce builds that keep a stable signature (so updates install over an existing install), place your keystore in the project root and a gitignored `keystore.properties` next to it:
+The app is deliberately architected so adding a Zoho account needs **no UI rework**:
 
-```properties
-storeFile=nijatva.keystore
-storePassword=...
-keyAlias=nijatva
-keyPassword=...
-```
+1. **Implement `sync/zoho/ZohoSyncProvider.kt`** — the file documents the exact
+   steps (Zoho Accounts OAuth token exchange, storage backend choice such as
+   Zoho WorkDrive, chunked upload for large videos).
+2. **Add a sign-in screen** and store tokens in EncryptedSharedPreferences.
+3. **After sign-in**, call:
+   ```kotlin
+   app.container.syncEngine.setProvider(ZohoSyncProvider())
+   engine.syncNow() // drains everything queued so far
+   ```
+4. Items the user already marked "back up" (the cloud icon in the viewer) sit in
+   the persistent `upload_queue` table and upload automatically at this point.
+5. Later: album sync, shared albums, trash, and remote quota display can all be
+   added through the same `CloudSyncProvider` interface.
 
-Without both files the build falls back to the standard Android debug key.
+## Roadmap ideas
+
+- Pinch-to-zoom and basic editing (crop, filters)
+- On-device semantic search (ML Kit image labeling — still private to the device)
+- People & places grouping (on-device face clustering)
+- Trash and archiving
+- Multi-select in the main grid for bulk album/favorite actions
 
 ## Notes
 
-- The editor assets under `app/src/main/assets/photalius/` come from the Photalius project (MIT, by Hossein Pira) and are bundled so the editor works fully offline.
+- This is a personal-use project. `applicationId` is `com.zoho.photos`; if you
+  ever publish it, change the id to something you own (e.g. `com.yourname.zohophotos`)
+  to avoid conflicts with Zoho Corporation's own apps and trademarks.
