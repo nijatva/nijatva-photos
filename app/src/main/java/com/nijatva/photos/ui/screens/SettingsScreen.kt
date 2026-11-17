@@ -296,7 +296,10 @@ fun SettingsScreen(
                 SettingNavRow(
                     title = "About Nijatva Photos",
                     subtitle = "Nijatva Photos 2.2.0 \u00B7 local-first gallery"
-                ) { onOpenDeveloper() }
+                ) {
+                    // The shared Nijatva signature card (same in every app).
+                    context.startActivity(com.nijatva.signature.Signature.developer(context))
+                }
                 HorizontalDivider()
                 SettingNavRow(
                     title = "Privacy",

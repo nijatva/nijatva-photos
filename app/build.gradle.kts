@@ -78,6 +78,8 @@ android {
 }
 
 dependencies {
+    // Nijatva signature: shared Appearance + Developer screens (see nijatva-core)
+    implementation(files("libs/nijatva-signature-1.0.0.aar"))
     val composeBom = platform("androidx.compose:compose-bom:2024.09.03")
     implementation(composeBom)
 
