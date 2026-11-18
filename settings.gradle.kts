@@ -8,6 +8,14 @@ pluginManagement {
             }
         }
         mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
         // nijatva-core's signature kit, published by publish.yml on a release tag.
         maven {
             name = "NijatvaGitHubPackages"
@@ -17,16 +25,8 @@ pluginManagement {
                 password = System.getenv("GITHUB_TOKEN") ?: ""
             }
         }
-        gradlePluginPortal()
-    }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
     }
 }
 
-rootProject.name = "ZohoPhotos"
+rootProject.name = "NijatvaPhotos"
 include(":app")
